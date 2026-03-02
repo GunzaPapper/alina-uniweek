@@ -1,4 +1,4 @@
-const CACHE = "uniweek-v4";
+const CACHE = "uniweek-v6";
 const ASSETS = [
   "./",
   "./index.html",
@@ -25,4 +25,5 @@ self.addEventListener("fetch", (e) => {
       .then((cached) => cached || fetch(e.request))
       .catch(() => caches.match("./index.html"))
   );
+
 });
