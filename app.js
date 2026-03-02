@@ -1,72 +1,71 @@
-﻿// ===== Storage keys =====
-const K_WEEK = "uniweek_selectedWeek"; // "odd" | "even"
-const K_WEEK_MODE = "uniweek_weekMode"; // "auto" | "manual"
-const K_CLASSES = "uniweek_classes";   // array
+"use strict";
 
-// Wishes anti-repeat:
-const K_WISH_HISTORY = "uniweek_wishHistory10";    // array of last 10 wishes
-const K_WISH_LASTDATE = "uniweek_wishLastDateMap"; // { wishText: "YYYY-MM-DD" }
+/* =========================
+   Storage keys
+========================= */
+const K_WEEK = "uniweek_selectedWeek";          // "odd" | "even"
+const K_CLASSES = "uniweek_classes";            // array
 
-// Quiz settings/history:
-const K_QUIZ_LEVEL = "uniweek_quizLevel"; // "easy" | "medium" | "hard"
-function quizHistKey(level) { return `uniweek_quizHistory8_${level}`; }
+const K_WISH_HISTORY = "uniweek_wishHistory10"; // last 10 wishes
+const K_WISH_LASTMAP = "uniweek_wishLastMap";   // {wish: "YYYY-MM-DD"}
 
-// ===== DOM: Tabs =====
-const tabSchedule = document.getElementById("tabSchedule");
-const tabWishes = document.getElementById("tabWishes");
-const tabSettings = document.getElementById("tabSettings");
+const K_QUIZ_LEVEL = "uniweek_quizLevel";       // easy|medium|hard
+const quizHistKey = (level) => `uniweek_quizHistory8_${level}`;
 
-const screenSchedule = document.getElementById("screenSchedule");
-const screenWishes = document.getElementById("screenWishes");
-const screenSettings = document.getElementById("screenSettings");
+/* =========================
+   DOM
+========================= */
+const $ = (id) => document.getElementById(id);
 
-// ===== DOM: Week =====
-const weekOddBtn = document.getElementById("weekOddBtn");
-const weekEvenBtn = document.getElementById("weekEvenBtn");
+const tabSchedule = $("tabSchedule");
+const tabWishes = $("tabWishes");
+const tabSettings = $("tabSettings");
 
-// ===== DOM: Schedule =====
-const todayLabel = document.getElementById("todayLabel");
-const todayList = document.getElementById("todayList");
-const weekGrid = document.getElementById("weekGrid");
+const screenSchedule = $("screenSchedule");
+const screenWishes = $("screenWishes");
+const screenSettings = $("screenSettings");
 
-// ===== DOM: Settings =====
-const addClassBtn = document.getElementById("addClassBtn");
-const clearAllBtn = document.getElementById("clearAllBtn");
-const csvInput = document.getElementById("csvInput");
+const weekOddBtn = $("weekOddBtn");
+const weekEvenBtn = $("weekEvenBtn");
 
-// ===== DOM: Add class modal =====
-const classDialog = document.getElementById("classDialog");
-const classForm = document.getElementById("classForm");
+const todayLabel = $("todayLabel");
+const todayList = $("todayList");
+const weekGrid = $("weekGrid");
 
-// ===== DOM: Wishes =====
-const wishBox = document.getElementById("wishBox");
-const wishHint = document.getElementById("wishHint"); // hidden in HTML
-const newWishBtn = document.getElementById("newWishBtn");
+const newWishBtn = $("newWishBtn");
+const wishBox = $("wishBox");
 
-// ===== DOM: Memory =====
-const memoryStatus = document.getElementById("memoryStatus");
-const memoryStartBtn = document.getElementById("memoryStartBtn");
-const memoryResetBtn = document.getElementById("memoryResetBtn");
-const memoryLevelLabel = document.getElementById("memoryLevelLabel");
-const memoryGridEl = document.querySelector(".memoryGrid");
-let memButtons = []; // created dynamically
+const addClassBtn = $("addClassBtn");
+const csvInput = $("csvInput");
+const clearScheduleBtn = $("clearScheduleBtn");
 
-// ===== DOM: Quiz =====
-const quizScore = document.getElementById("quizScore");
-const quizQuestion = document.getElementById("quizQuestion");
-const quizOptions = document.getElementById("quizOptions");
-const quizNextBtn = document.getElementById("quizNextBtn");
-const quizResetBtn = document.getElementById("quizResetBtn");
-const quizFeedback = document.getElementById("quizFeedback");
-const quizEasyBtn = document.getElementById("quizEasyBtn");
-const quizMedBtn  = document.getElementById("quizMedBtn");
-const quizHardBtn = document.getElementById("quizHardBtn");
+const classDialog = $("classDialog");
+const classForm = $("classForm");
 
-// ===== DOM: Celebration =====
-const celebrate = document.getElementById("celebrate");
-const celebrateParticles = document.getElementById("celebrateParticles");
+const memoryGridEl = $("memoryGrid");
+const memoryStatus = $("memoryStatus");
+const memoryStartBtn = $("memoryStartBtn");
+const memoryResetBtn = $("memoryResetBtn");
+const memoryLevelLabel = $("memoryLevelLabel");
 
-// ===== Data =====
+const quizScore = $("quizScore");
+const quizQuestion = $("quizQuestion");
+const quizOptions = $("quizOptions");
+const quizNextBtn = $("quizNextBtn");
+const quizResetBtn = $("quizResetBtn");
+const quizFeedback = $("quizFeedback");
+const quizEasyBtn = $("quizEasyBtn");
+const quizMedBtn = $("quizMedBtn");
+const quizHardBtn = $("quizHardBtn");
+
+const celebrate = $("celebrate");
+const celebrateParticles = $("celebrateParticles");
+const celebrateTitle = $("celebrateTitle");
+const celebrateSub = $("celebrateSub");
+
+/* =========================
+   Data
+========================= */
 const DAYS = [
   { key: "monday", name: "Понедельник", sort: 1 },
   { key: "tuesday", name: "Вторник", sort: 2 },
@@ -76,7 +75,6 @@ const DAYS = [
   { key: "saturday", name: "Суббота", sort: 6 },
 ];
 
-// Пожелания
 const BASE_WISHES = [
   "Доброе утро, Алина 💗 Ты справишься со всем сегодня.",
   "Пусть день будет мягким, а мысли — спокойными 🌸",
@@ -85,108 +83,57 @@ const BASE_WISHES = [
   "Если станет трудно — просто вспомни: ты не одна 💗",
   "Пусть пары пройдут легко, а настроение будет тёплым и спокойным 🌷",
   "Ты прекрасная. И у тебя всё получится 💗",
-  "Дыши глубже. Ты уже молодец.",
+  "Дыши глубже. Ты уже молодец 🙂",
   "Пусть всё важное получится с первого раза ✨",
-  "Я рядом мыслями. Всегда.",
-  "Пусть сегодня тебе встретится что-то доброе и светлое 🌸",
-  "Ты умеешь собираться и побеждать — я это видел 💗",
-  "Пусть мозг работает быстро, а сердце — спокойно ☁️",
-  "Пусть сегодня будет день «я справилась» 💗",
-  "Ты — моя гордость. Без условий.",
-  "Пусть у тебя будет вкусный кофе/чай и хорошие люди рядом ☕️",
-  "Если устала — сделай паузу. Ты не обязана быть идеальной.",
-  "Ты умеешь учиться красиво. Мне это нравится 💗",
-  "Сегодня твоя улыбка — главный план дня 🙂",
-  "Пусть даже сложное станет понятным ✨",
+  "Я рядом мыслями. Всегда 💗",
+  "Ты — моя гордость. Без условий 💞",
+  "Если устала — сделай паузу. Ты не обязана быть идеальной ☁️",
+  "Сегодня твоя улыбка — главный план дня 😊",
   "Я люблю тебя. И точка 💗",
-  "Ты заслуживаешь нежности. Сегодня — особенно.",
-  "Пусть всё сложится ровно так, как тебе удобно 🌸",
-  "Пусть у тебя получится чуть больше, чем ты ожидала 💗",
-  "Ты — лучшая версия «Алины» на планете 🙂",
-  "Пусть день будет без лишней суеты.",
+  "Пусть даже сложное станет понятным ✨",
   "Я мысленно держу тебя за руку 💗",
-  "Если сомневаешься — просто начни. Дальше будет легче.",
-  "Ты умеешь делать невозможное привычным делом ✨",
-  "Пусть тебя сегодня радует каждая мелочь 🌷",
-  "Ты — умница. Даже когда тебе кажется иначе.",
-  "Я горжусь тобой. Правда 💗",
-  "Пусть будет меньше стресса и больше воздуха.",
-  "Ты не одна. Я с тобой.",
-  "Пусть сегодня будет день твоей маленькой победы 💗",
 ];
 
-// 30 вариантов похвалы
 const PRAISES = [
-  { t: "Ты моя умничка 💗🥰", s: "Так держать! ✨" },
-  { t: "Вау! Ты супер 💖", s: "Я тобой горжусь 😍" },
-  { t: "Браво, красавица 💗", s: "У тебя отлично получается 🌸" },
-  { t: "Ты просто космос ⭐️", s: "Продолжай в том же духе 🚀" },
-  { t: "Гордость моя 💞", s: "Ещё чуть-чуть — и будет рекорд ✨" },
-  { t: "Умничкааа 💗", s: "Ты справилась идеально 😌" },
-  { t: "Ты сильная 💪💗", s: "И очень-очень умная 🥰" },
-  { t: "Красиво сделано 💖", s: "Вот это уровень! 🎉" },
-  { t: "Молодец, Алина 🌷", s: "Ты сияешь ✨" },
-  { t: "Победа! 💕", s: "Так приятно смотреть на твой прогресс 😊" },
-  { t: "Ты — лучшая 💗", s: "Я в тебя верю всегда 🌸" },
-  { t: "Супер-умница 🥰", s: "Ещё один шаг вперёд ✨" },
-  { t: "Это было круто 💖", s: "Ты реально молодец 😍" },
-  { t: "Умничка моя 💞", s: "Я горжусь тобой 💗" },
-  { t: "Ты справилась ⭐️", s: "И это только начало 🌷" },
-  { t: "Как же ты хороша 💗", s: "Продолжай, я рядом 😊" },
-  { t: "Шикарно! 💕", s: "Ты очень способная ✨" },
-  { t: "Так держать 💖", s: "Ты делаешь это красиво 🌸" },
-  { t: "Аплодисменты 👏💗", s: "Ты умница-умница 🥰" },
-  { t: "Великолепно ⭐️", s: "Ещё один успех 🎉" },
-  { t: "Ты победительница 💗", s: "Вот это характер 💪" },
-  { t: "Солнце, ты молодец 🌞", s: "Я улыбаюсь от гордости 😊" },
-  { t: "Идеально 💖", s: "Ты на высоте ✨" },
-  { t: "Крутая! 💞", s: "Прямо как я люблю 😍" },
-  { t: "Талант 💗", s: "И труд — лучшая комбинация 🌸" },
-  { t: "Прекрасно 🥰", s: "Ещё разочек? 😉" },
-  { t: "Умница моя 💕", s: "Ты можешь всё ✨" },
-  { t: "Сильно! 💖", s: "Это было уверенно 💪" },
-  { t: "Чудо моё 💗", s: "Ты делаешь мой день лучше 🌷" },
-  { t: "Вот это да! ⭐️", s: "Ты растёшь на глазах ✨" }
+  { t:"Ты моя умничка 💗🥰", s:"Так держать! ✨" },
+  { t:"Вау! Ты супер 💖", s:"Я тобой горжусь 😍" },
+  { t:"Браво, красавица 💗", s:"У тебя отлично получается 🌸" },
+  { t:"Ты просто космос ⭐️", s:"Продолжай в том же духе 🚀" },
+  { t:"Гордость моя 💞", s:"Ещё чуть-чуть — и будет рекорд ✨" },
+  { t:"Умничкааа 💗", s:"Ты справилась идеально 😌" },
+  { t:"Ты сильная 💪💗", s:"И очень-очень умная 🥰" },
+  { t:"Красиво сделано 💖", s:"Вот это уровень! 🎉" },
+  { t:"Молодец, Алина 🌷", s:"Ты сияешь ✨" },
+  { t:"Победа! 💕", s:"Так приятно смотреть на твой прогресс 😊" },
+  { t:"Ты — лучшая 💗", s:"Я в тебя верю всегда 🌸" },
+  { t:"Супер-умница 🥰", s:"Ещё один шаг вперёд ✨" },
+  { t:"Это было круто 💖", s:"Ты реально молодец 😍" },
+  { t:"Умничка моя 💞", s:"Я горжусь тобой 💗" },
+  { t:"Ты справилась ⭐️", s:"И это только начало 🌷" },
+  { t:"Как же ты хороша 💗", s:"Продолжай, я рядом 😊" },
+  { t:"Шикарно! 💕", s:"Ты очень способная ✨" },
+  { t:"Так держать 💖", s:"Ты делаешь это красиво 🌸" },
+  { t:"Аплодисменты 👏💗", s:"Ты умница-умница 🥰" },
+  { t:"Великолепно ⭐️", s:"Ещё один успех 🎉" },
+  { t:"Ты победительница 💗", s:"Вот это характер 💪" },
+  { t:"Солнце, ты молодец 🌞", s:"Я улыбаюсь от гордости 😊" },
+  { t:"Идеально 💖", s:"Ты на высоте ✨" },
+  { t:"Крутая! 💞", s:"Прямо как я люблю 😍" },
+  { t:"Талант 💗", s:"И труд — лучшая комбинация 🌸" },
+  { t:"Прекрасно 🥰", s:"Ещё разочек? 😉" },
+  { t:"Умница моя 💕", s:"Ты можешь всё ✨" },
+  { t:"Сильно! 💖", s:"Это было уверенно 💪" },
+  { t:"Чудо моё 💗", s:"Ты делаешь мой день лучше 🌷" },
+  { t:"Вот это да! ⭐️", s:"Ты растёшь на глазах ✨" },
 ];
 
-// ===== Встроенное расписание =====
-const DEFAULT_SCHEDULE_CSV = `courseName,type,dayOfWeek,startTime,endTime,weekType,location,color
-Трудовое право — Бабаева О. Н.,lecture,monday,11:30,13:05,both,a.304 (Корпус №9),
-Иностранный язык — Горчакова Е. П.,seminar,monday,13:25,15:00,odd,a.904 (Корпус №9),
-Иностранный язык — Пешкова А. Б.,seminar,monday,13:25,15:00,even,a.714 (Корпус №9),
-Гражданское право. Общая часть — Евтухович Е. А.,seminar,monday,15:10,16:45,both,a.303 (Корпус №9),
-Административное право — Старилов Ю. Н.,lecture,monday,16:55,18:30,both,Акт. зал (Корпус №9),
-
-Трудовое право — Бабаева О. Н.,seminar,tuesday,08:00,09:35,both,a.608 (Корпус №9),
-Уголовное право. Общая часть — Белоконь Г. Г.,seminar,tuesday,09:45,11:20,both,a.610 (Корпус №9),
-Физическая культура и спорт — Преп.,seminar,tuesday,11:30,13:05,both,Спортзал (Корпус №9),
-Таможенное право — Матвеева Т. А.,seminar,tuesday,13:25,15:00,both,a.705 (Корпус №9),
-
-Налоговое право — Мардасова М. Е.,seminar,wednesday,08:00,09:35,both,a.704 (Корпус №9),
-Налоговое право — Мардасова М. Е.,seminar,wednesday,09:45,11:20,both,a.902 (Корпус №9),
-Гражданское право. Общая часть — Сафронова Т. Н.,lecture,wednesday,11:30,13:05,both,a.304 (Корпус №9),
-Информационное право — Матвеев С. П.,lecture,wednesday,13:25,15:00,both,a.504 (Корпус №9),
-Таможенное право — Матвеева Т. А.,lecture,wednesday,15:10,16:45,both,a.304 (Корпус №9),
-
-Юридическая техника — Белоконь Н. В.,lecture,thursday,11:30,13:05,both,a.505 (Корпус №9),
-Административное право — Катинская Е. С.,seminar,thursday,13:25,15:00,both,a.605 (Корпус №9),
-Налоговое право — Сенцова М. В.,lecture,thursday,15:10,16:45,both,a.504 (Корпус №9),
-Физическая культура и спорт — Преп.,seminar,thursday,16:55,18:30,both,Спортзал (Корпус №9),
-
-Информационное право — Матвеев С. П.,seminar,friday,13:25,15:00,both,a.608 (Корпус №9),
-Уголовное право. Общая часть — Трухачев В. В.,lecture,friday,15:10,16:45,both,a.504 (Корпус №9),
-Юридическая психология — Куницына О. А.,lecture,friday,16:55,18:30,both,a.504 (Корпус №9),
-
-Юридическая психология — Катинский В. Г.,seminar,saturday,13:25,15:00,both,a.716 (Корпус №9),
-Гражданское право. Общая часть — Евтухович Е. А.,seminar,saturday,15:10,16:45,both,a.716 (Корпус №9),
-`;
-
-// ===== Helpers =====
+/* =========================
+   Helpers
+========================= */
 function loadJSON(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw);
+    return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
   }
@@ -197,118 +144,98 @@ function saveJSON(key, value) {
 
 function getWeek() {
   const w = localStorage.getItem(K_WEEK);
-  return (w === "even" || w === "odd") ? w : "odd";
+  return (w === "odd" || w === "even") ? w : "odd";
 }
-function getWeekMode() {
-  const m = localStorage.getItem(K_WEEK_MODE);
-  return (m === "manual") ? "manual" : "auto";
-}
-
-// 🔧 Якорь: поставь сюда понедельник недели, которая ТОЧНО была Odd.
-// Сейчас стоит пример.
-const ANCHOR_DATE = "2026-03-02";
-const ANCHOR_WEEK = "odd";
-
-function weekFromAnchor(today = new Date()) {
-  const anchor = new Date(ANCHOR_DATE + "T00:00:00");
-  const t = new Date(today);
-  t.setHours(0,0,0,0);
-
-  const diffDays = Math.floor((t.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24));
-  const diffWeeks = Math.floor(diffDays / 7);
-
-  if (diffWeeks % 2 === 0) return ANCHOR_WEEK;
-  return (ANCHOR_WEEK === "odd") ? "even" : "odd";
-}
-
 function setWeek(w) {
-  localStorage.setItem(K_WEEK_MODE, "manual"); // ручной выбор => manual
   localStorage.setItem(K_WEEK, w);
   updateWeekUI();
   renderAll();
 }
 
 function parseHHmmToMinutes(s) {
-  const v = String(s).trim();
-  const m = /^(\d{1,2}):(\d{2})$/.exec(v);
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(s).trim());
   if (!m) return null;
-  const hh = Number(m[1]);
-  const mm = Number(m[2]);
+  const hh = Number(m[1]), mm = Number(m[2]);
   if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
   return hh * 60 + mm;
 }
 function minutesToHHmm(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+  return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
 }
 function normalizeHex(hex) {
   if (!hex) return null;
-  let c = String(hex).trim().replace("#", "");
-  if (c.length !== 6) return null;
+  let c = String(hex).trim().replace("#","");
   if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
   return c.toUpperCase();
 }
-
-function todayDayKey() {
-  const d = new Date();
-  const wd = d.getDay(); // 0=Sun..6=Sat
-  const map = { 1:"monday",2:"tuesday",3:"wednesday",4:"thursday",5:"friday",6:"saturday" };
-  return map[wd] || null;
+function uuid() {
+  return (crypto?.randomUUID) ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + "_" + Date.now());
 }
-function formatTodayLabel() {
-  const d = new Date();
-  return d.toLocaleDateString("ru-RU", { weekday: "long", day: "2-digit", month: "long" });
-}
-function weekFilterOK(item, selectedWeek) {
-  if (selectedWeek === "odd") return item.weekType === "odd" || item.weekType === "both";
-  if (selectedWeek === "even") return item.weekType === "even" || item.weekType === "both";
-  return true;
-}
-function sortClasses(a, b) {
-  const da = DAYS.find(x => x.key === a.dayOfWeek)?.sort ?? 99;
-  const db = DAYS.find(x => x.key === b.dayOfWeek)?.sort ?? 99;
-  if (da !== db) return da - db;
-  return a.startMinutes - b.startMinutes;
-}
-
 function isoDate(d = new Date()) {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
   return `${y}-${m}-${day}`;
 }
 function daysBetween(isoA, isoB) {
   const [ay, am, ad] = isoA.split("-").map(Number);
   const [by, bm, bd] = isoB.split("-").map(Number);
-  const a = new Date(ay, am - 1, ad).getTime();
-  const b = new Date(by, bm - 1, bd).getTime();
-  return Math.floor((b - a) / (1000 * 60 * 60 * 24));
+  const a = new Date(ay, am-1, ad).getTime();
+  const b = new Date(by, bm-1, bd).getTime();
+  return Math.floor((b - a) / (1000*60*60*24));
+}
+function todayDayKey() {
+  const wd = new Date().getDay(); // 0 Sun ... 6 Sat
+  const map = {1:"monday",2:"tuesday",3:"wednesday",4:"thursday",5:"friday",6:"saturday"};
+  return map[wd] || null;
+}
+function formatTodayLabel() {
+  return new Date().toLocaleDateString("ru-RU", { weekday:"long", day:"2-digit", month:"long" });
 }
 
-// ===== Tabs =====
+function weekFilterOK(item, selectedWeek) {
+  return selectedWeek === "odd"
+    ? (item.weekType === "odd" || item.weekType === "both")
+    : (item.weekType === "even" || item.weekType === "both");
+}
+function sortClasses(a, b) {
+  const da = DAYS.find(d => d.key === a.dayOfWeek)?.sort ?? 99;
+  const db = DAYS.find(d => d.key === b.dayOfWeek)?.sort ?? 99;
+  if (da !== db) return da - db;
+  return a.startMinutes - b.startMinutes;
+}
+
+/* =========================
+   Tabs
+========================= */
 function showTab(which) {
-  const isSchedule = which === "schedule";
-  const isWishes = which === "wishes";
-  const isSettings = which === "settings";
+  const s = which === "schedule";
+  const w = which === "wishes";
+  const st = which === "settings";
 
-  tabSchedule.classList.toggle("active", isSchedule);
-  tabWishes.classList.toggle("active", isWishes);
-  tabSettings.classList.toggle("active", isSettings);
+  tabSchedule.classList.toggle("active", s);
+  tabWishes.classList.toggle("active", w);
+  tabSettings.classList.toggle("active", st);
 
-  screenSchedule.classList.toggle("active", isSchedule);
-  screenWishes.classList.toggle("active", isWishes);
-  screenSettings.classList.toggle("active", isSettings);
+  screenSchedule.classList.toggle("active", s);
+  screenWishes.classList.toggle("active", w);
+  screenSettings.classList.toggle("active", st);
 }
 
-// ===== Week UI =====
+/* =========================
+   Week UI
+========================= */
 function updateWeekUI() {
   const w = getWeek();
   weekOddBtn.classList.toggle("active", w === "odd");
   weekEvenBtn.classList.toggle("active", w === "even");
 }
 
-// ===== Schedule rendering =====
+/* =========================
+   Schedule rendering
+========================= */
 function renderClassItem(item, compact=false) {
   const el = document.createElement("div");
   el.className = "item";
@@ -336,13 +263,16 @@ function renderClassItem(item, compact=false) {
   top.appendChild(meta);
   main.appendChild(top);
 
-  const sub = document.createElement("div");
-  sub.className = "itemSub";
-  const parts = [];
-  if (!compact) parts.push(item.weekType.toUpperCase());
-  if (item.location) parts.push(item.location);
-  sub.textContent = parts.join(" • ");
-  if (sub.textContent) main.appendChild(sub);
+  const subParts = [];
+  if (!compact) subParts.push(item.weekType.toUpperCase());
+  if (item.location) subParts.push(item.location);
+
+  if (subParts.length) {
+    const sub = document.createElement("div");
+    sub.className = "itemSub";
+    sub.textContent = subParts.join(" • ");
+    main.appendChild(sub);
+  }
 
   el.appendChild(main);
   return el;
@@ -350,25 +280,22 @@ function renderClassItem(item, compact=false) {
 
 function renderToday() {
   todayLabel.textContent = formatTodayLabel();
-
   const selectedWeek = getWeek();
   const classes = loadJSON(K_CLASSES, []).sort(sortClasses);
 
-  const dayKey = todayDayKey();
-  const todayItems = dayKey
-    ? classes.filter(c => c.dayOfWeek === dayKey && weekFilterOK(c, selectedWeek))
-    : [];
+  const key = todayDayKey();
+  const items = key ? classes.filter(c => c.dayOfWeek === key && weekFilterOK(c, selectedWeek)) : [];
 
   todayList.innerHTML = "";
-  if (!dayKey) {
+  if (!key) {
     todayList.innerHTML = `<div class="smallMuted">Сегодня воскресенье — расписание отображаем Пн–Сб 💗</div>`;
     return;
   }
-  if (todayItems.length === 0) {
+  if (!items.length) {
     todayList.innerHTML = `<div class="smallMuted">На сегодня пар нет (или они в другой неделе).</div>`;
     return;
   }
-  for (const item of todayItems) todayList.appendChild(renderClassItem(item));
+  for (const it of items) todayList.appendChild(renderClassItem(it));
 }
 
 function renderWeek() {
@@ -384,22 +311,23 @@ function renderWeek() {
     const wrap = document.createElement("div");
     wrap.className = "dayBlock";
 
-    const title = document.createElement("div");
-    title.className = "dayTitle";
-    title.textContent = day.name;
-    wrap.appendChild(title);
+    const t = document.createElement("div");
+    t.className = "dayTitle";
+    t.textContent = day.name;
+    wrap.appendChild(t);
 
-    if (dayItems.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "dayEmpty";
-      empty.textContent = "Нет пар";
-      wrap.appendChild(empty);
+    if (!dayItems.length) {
+      const e = document.createElement("div");
+      e.className = "dayEmpty";
+      e.textContent = "Нет пар";
+      wrap.appendChild(e);
     } else {
       const list = document.createElement("div");
       list.className = "list";
-      for (const item of dayItems) list.appendChild(renderClassItem(item, true));
+      for (const it of dayItems) list.appendChild(renderClassItem(it, true));
       wrap.appendChild(list);
     }
+
     weekGrid.appendChild(wrap);
   }
 }
@@ -409,59 +337,11 @@ function renderAll() {
   renderWeek();
 }
 
-// ===== Seed schedule =====
-function seedDefaultScheduleIfEmpty() {
-  const current = loadJSON(K_CLASSES, []);
-  if (Array.isArray(current) && current.length > 0) return;
-
-  try {
-    const parsed = parseCSV(DEFAULT_SCHEDULE_CSV);
-    saveJSON(K_CLASSES, parsed);
-  } catch (e) {
-    console.error("DEFAULT_SCHEDULE_CSV parse failed:", e);
-  }
-}
-
-// ===== Wishes: anti-repeat =====
-function pickWishSmart() {
-  const history = loadJSON(K_WISH_HISTORY, []);
-  const lastMap = loadJSON(K_WISH_LASTDATE, {});
-  const today = isoDate();
-
-  const inLast10 = new Set(history);
-
-  let filtered = BASE_WISHES.filter(w => {
-    const last = lastMap[w];
-    const within3 = last ? (daysBetween(last, today) < 3) : false;
-    return !inLast10.has(w) && !within3;
-  });
-
-  if (filtered.length === 0) filtered = BASE_WISHES.filter(w => !inLast10.has(w));
-  if (filtered.length === 0) filtered = BASE_WISHES.slice();
-
-  return filtered[Math.floor(Math.random() * filtered.length)];
-}
-
-function setNewWish() {
-  const w = pickWishSmart();
-  wishBox.textContent = w;
-
-  const today = isoDate();
-  const history = loadJSON(K_WISH_HISTORY, []);
-  const lastMap = loadJSON(K_WISH_LASTDATE, {});
-
-  history.unshift(w);
-  saveJSON(K_WISH_HISTORY, history.slice(0, 10));
-
-  lastMap[w] = today;
-  saveJSON(K_WISH_LASTDATE, lastMap);
-
-  // подсказку убрали полностью
-  if (wishHint) wishHint.textContent = "";
-}
-
-// ===== CSV parsing =====
+/* =========================
+   CSV Import
+========================= */
 function splitCSVLine(line) {
+  // простая поддержка кавычек: "..."
   let res = [];
   let cur = "";
   let inQ = false;
@@ -473,89 +353,85 @@ function splitCSVLine(line) {
   res.push(cur);
   return res;
 }
+
 function parseCSV(text) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (lines.length === 0) throw new Error("Пустой CSV.");
+  if (!lines.length) throw new Error("Пустой CSV.");
 
-  const header = lines[0].toLowerCase();
   const expected = "coursename,type,dayofweek,starttime,endtime,weektype,location,color";
+  const header = lines[0].toLowerCase();
   if (header !== expected) throw new Error("Неверный заголовок CSV.\nОжидаю:\n" + expected);
 
   const out = [];
   for (let i = 1; i < lines.length; i++) {
-    const lineNumber = i + 1;
+    const n = i + 1; // line number
     const cols = splitCSVLine(lines[i]);
-    if (cols.length !== 8) throw new Error(`Строка ${lineNumber}: нужно 8 колонок, найдено ${cols.length}.`);
+    if (cols.length !== 8) throw new Error(`Строка ${n}: нужно 8 колонок, найдено ${cols.length}.`);
 
     const courseName = cols[0].trim();
-    const type = cols[1].trim().toLowerCase();
+    const classType = cols[1].trim().toLowerCase();
     const dayOfWeek = cols[2].trim().toLowerCase();
     const startTime = cols[3].trim();
     const endTime = cols[4].trim();
     const weekType = cols[5].trim().toLowerCase();
     const location = cols[6].trim();
-    const color = normalizeHex(cols[7].trim());
+    const colorHex = normalizeHex(cols[7].trim());
 
-    if (!courseName) throw new Error(`Строка ${lineNumber}: courseName пустой.`);
-    if (!["lecture","seminar","lab"].includes(type)) throw new Error(`Строка ${lineNumber}: неверный type.`);
-    if (!DAYS.some(d => d.key === dayOfWeek)) throw new Error(`Строка ${lineNumber}: неверный dayOfWeek.`);
-    if (!["odd","even","both"].includes(weekType)) throw new Error(`Строка ${lineNumber}: неверный weekType.`);
+    if (!courseName) throw new Error(`Строка ${n}: courseName пустой.`);
+    if (!["lecture","seminar","lab"].includes(classType)) throw new Error(`Строка ${n}: неверный type.`);
+    if (!DAYS.some(d => d.key === dayOfWeek)) throw new Error(`Строка ${n}: неверный dayOfWeek.`);
+    if (!["odd","even","both"].includes(weekType)) throw new Error(`Строка ${n}: неверный weekType.`);
 
     const sMin = parseHHmmToMinutes(startTime);
     const eMin = parseHHmmToMinutes(endTime);
-    if (sMin == null) throw new Error(`Строка ${lineNumber}: неверный startTime (HH:mm).`);
-    if (eMin == null) throw new Error(`Строка ${lineNumber}: неверный endTime (HH:mm).`);
-    if (sMin >= eMin) throw new Error(`Строка ${lineNumber}: startTime должен быть раньше endTime.`);
+    if (sMin == null) throw new Error(`Строка ${n}: неверный startTime (HH:mm).`);
+    if (eMin == null) throw new Error(`Строка ${n}: неверный endTime (HH:mm).`);
+    if (sMin >= eMin) throw new Error(`Строка ${n}: startTime должен быть раньше endTime.`);
 
     out.push({
-      id: newId(),
+      id: uuid(),
       courseName,
-      classType: type,
+      classType,
       dayOfWeek,
       startMinutes: sMin,
       endMinutes: eMin,
       weekType,
       location: location ? location : null,
-      colorHex: color ? color : null
+      colorHex: colorHex ? colorHex : null,
     });
   }
   return out;
 }
 
-// ===== Add class modal =====
+/* =========================
+   Add class (manual)
+========================= */
 function openAddClass() {
   classForm.reset();
   classDialog.showModal();
 }
-function newId() {
-  if (crypto && crypto.randomUUID) return crypto.randomUUID();
-  return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now();
-}
+
 function saveClassFromForm() {
   const fd = new FormData(classForm);
 
   const courseName = String(fd.get("courseName") || "").trim();
   const classType = String(fd.get("classType") || "").trim().toLowerCase();
-  const dayOfWeek = String(fd.get("dayOfWeek") || "").trim();
-  const weekType = String(fd.get("weekType") || "").trim();
-  const startTime = String(fd.get("startTime") || "").trim();
-  const endTime = String(fd.get("endTime") || "").trim();
+  const dayOfWeek = String(fd.get("dayOfWeek") || "").trim().toLowerCase();
+  const weekType = String(fd.get("weekType") || "").trim().toLowerCase();
+  const startMinutes = parseHHmmToMinutes(String(fd.get("startTime") || "").trim());
+  const endMinutes = parseHHmmToMinutes(String(fd.get("endTime") || "").trim());
   const location = String(fd.get("location") || "").trim();
   const colorHex = normalizeHex(String(fd.get("colorHex") || "").trim());
 
   if (!courseName) return alert("Введите название пары.");
-  if (!["lecture","seminar","lab"].includes(classType)) return alert("Неверный тип (lecture/seminar/lab).");
+  if (!["lecture","seminar","lab"].includes(classType)) return alert("Неверный тип.");
   if (!DAYS.some(d => d.key === dayOfWeek)) return alert("Неверный день.");
   if (!["odd","even","both"].includes(weekType)) return alert("Неверный тип недели.");
-
-  const startMinutes = parseHHmmToMinutes(startTime);
-  const endMinutes = parseHHmmToMinutes(endTime);
-  if (startMinutes == null) return alert("Неверное время начала. Формат HH:mm");
-  if (endMinutes == null) return alert("Неверное время конца. Формат HH:mm");
-  if (startMinutes >= endMinutes) return alert("Время начала должно быть раньше времени конца.");
+  if (startMinutes == null || endMinutes == null) return alert("Время должно быть в формате HH:mm");
+  if (startMinutes >= endMinutes) return alert("Начало должно быть раньше конца.");
 
   const item = {
-    id: newId(),
+    id: uuid(),
     courseName,
     classType,
     dayOfWeek,
@@ -563,7 +439,7 @@ function saveClassFromForm() {
     endMinutes,
     weekType,
     location: location ? location : null,
-    colorHex: colorHex ? colorHex : null
+    colorHex: colorHex ? colorHex : null,
   };
 
   const classes = loadJSON(K_CLASSES, []);
@@ -574,22 +450,60 @@ function saveClassFromForm() {
   renderAll();
 }
 
-// ===== Celebration =====
+/* =========================
+   Wishes (anti-repeat)
+========================= */
+function pickWishSmart() {
+  const history = loadJSON(K_WISH_HISTORY, []);
+  const lastMap = loadJSON(K_WISH_LASTMAP, {});
+  const today = isoDate();
+
+  const inLast10 = new Set(history);
+
+  // не повторять если было в последних 10
+  // и не повторять если было менее 3 дней назад
+  let pool = BASE_WISHES.filter(w => {
+    if (inLast10.has(w)) return false;
+    const last = lastMap[w];
+    if (!last) return true;
+    return daysBetween(last, today) >= 3;
+  });
+
+  if (!pool.length) pool = BASE_WISHES.filter(w => !inLast10.has(w));
+  if (!pool.length) pool = BASE_WISHES.slice();
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function setNewWish() {
+  const w = pickWishSmart();
+  wishBox.textContent = w;
+
+  const today = isoDate();
+  const history = loadJSON(K_WISH_HISTORY, []);
+  const lastMap = loadJSON(K_WISH_LASTMAP, {});
+
+  history.unshift(w);
+  saveJSON(K_WISH_HISTORY, history.slice(0, 10));
+
+  lastMap[w] = today;
+  saveJSON(K_WISH_LASTMAP, lastMap);
+}
+
+/* =========================
+   Celebration
+========================= */
 function rand(min, max) { return Math.random() * (max - min) + min; }
 
-function showCelebrateAsync() {
+function showCelebrate() {
+  const pick = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  celebrateTitle.textContent = pick.t;
+  celebrateSub.textContent = pick.s;
+
   celebrateParticles.innerHTML = "";
   celebrate.classList.remove("hidden");
   celebrate.setAttribute("aria-hidden", "false");
 
-  // Рандомная похвала
-  const pick = PRAISES[Math.floor(Math.random() * PRAISES.length)];
-  const titleEl = celebrate.querySelector(".celebrateTitle");
-  const subEl = celebrate.querySelector(".celebrateSub");
-  if (titleEl) titleEl.textContent = pick.t;
-  if (subEl) subEl.textContent = pick.s;
-
-  // Частицы
   const emojis = ["💗","💖","💕","💞","✨","🎉","🥰","😊","🌸","🌷","⭐️"];
   const count = 32;
 
@@ -597,44 +511,33 @@ function showCelebrateAsync() {
     const p = document.createElement("div");
     p.className = "particle";
     p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-
-    const left = rand(0, 100);
-    const delay = rand(0, 0.18);
-    const size = rand(16, 28);
-    const duration = rand(1.05, 1.55);
-
-    p.style.left = left + "vw";
-    p.style.animationDelay = delay + "s";
-    p.style.animationDuration = duration + "s";
-    p.style.fontSize = size + "px";
-
+    p.style.left = rand(0, 100) + "vw";
+    p.style.animationDelay = rand(0, 0.18) + "s";
+    p.style.animationDuration = rand(1.05, 1.55) + "s";
+    p.style.fontSize = rand(16, 28) + "px";
     celebrateParticles.appendChild(p);
   }
 
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      hideCelebrate();
-      resolve();
-    }, 1350);
-  });
+  setTimeout(hideCelebrate, 1350);
 }
-
 function hideCelebrate() {
   celebrate.classList.add("hidden");
   celebrate.setAttribute("aria-hidden", "true");
   celebrateParticles.innerHTML = "";
 }
-
 celebrate.addEventListener("click", hideCelebrate);
 
-// ===== Memory (Simon) =====
+/* =========================
+   Memory (Simon-like)
+========================= */
+let memButtons = [];
 let memSequence = [];
 let memUserIndex = 0;
 let memLevel = 0;
 let memShowing = false;
 let memActive = false;
 
-let memPadCount = 4; // starts
+let memPadCount = 4;
 const MEM_MAX_PADS = 16;
 
 const MEM_COLORS = [
@@ -651,77 +554,65 @@ const MEM_COLORS = [
 const MEM_EMOJIS = ["💗","🌸","✨","😊","🥰","🌷","⭐️","🍓","🧸","🎀","🍬","☁️","🫶","💖","💕","😌"];
 const MEM_COVER = "♡";
 
-function setMemoryUI(status) {
-  memoryStatus.textContent = status;
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setMemoryUI(text) {
+  memoryStatus.textContent = text;
   memoryLevelLabel.textContent = `Level: ${memLevel}`;
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 function updatePadCountForLevel() {
-  memPadCount = Math.min(4 + (memLevel - 1), MEM_MAX_PADS);
+  memPadCount = Math.min(4 + Math.max(0, memLevel - 1), MEM_MAX_PADS);
   const cols = Math.ceil(Math.sqrt(memPadCount));
   memoryGridEl.style.setProperty("--cols", String(cols));
 }
 
 function rebuildMemoryGrid() {
   memoryGridEl.innerHTML = "";
+  memButtons = [];
+
   for (let i = 0; i < memPadCount; i++) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "memBtn";
     b.dataset.pad = String(i);
-
     b.style.background = MEM_COLORS[i % MEM_COLORS.length];
     b.dataset.emoji = MEM_EMOJIS[i % MEM_EMOJIS.length];
-
     b.textContent = MEM_COVER;
-    b.style.fontSize = "24px";
-    b.style.fontWeight = "900";
     b.style.color = "rgba(0,0,0,.35)";
-    b.style.display = "flex";
-    b.style.alignItems = "center";
-    b.style.justifyContent = "center";
-    b.style.userSelect = "none";
-
     memoryGridEl.appendChild(b);
+    memButtons.push(b);
   }
-  memButtons = Array.from(document.querySelectorAll(".memBtn"));
 }
 
 async function flashPad(i) {
   const btn = memButtons[i];
   if (!btn) return;
 
-  const onMs = 420;
-  const offMs = 220;
-
   btn.textContent = btn.dataset.emoji || "💗";
   btn.style.color = "rgba(0,0,0,.55)";
-
   btn.classList.add("flash");
-  await sleep(onMs);
-  btn.classList.remove("flash");
 
+  await sleep(420);
+
+  btn.classList.remove("flash");
   btn.textContent = MEM_COVER;
   btn.style.color = "rgba(0,0,0,.35)";
 
-  await sleep(offMs);
+  await sleep(220);
+}
+
+function addRandomStep() {
+  memSequence.push(Math.floor(Math.random() * memPadCount));
 }
 
 async function showSequence() {
   memShowing = true;
   setMemoryUI("Смотри внимательно…");
   await sleep(200);
-
   for (const i of memSequence) await flashPad(i);
-
   memShowing = false;
   setMemoryUI("Теперь твоя очередь");
-}
-
-function addRandomStep() {
-  memSequence.push(Math.floor(Math.random() * memPadCount));
 }
 
 async function memoryStart() {
@@ -732,25 +623,23 @@ async function memoryStart() {
 
   updatePadCountForLevel();
   rebuildMemoryGrid();
-
   addRandomStep();
-  setMemoryUI("Готово!");
-  await sleep(450);
+
+  await sleep(200);
   await showSequence();
 }
 
 async function memoryNextLevel() {
-  await showCelebrateAsync();
+  showCelebrate();
 
   memLevel += 1;
   memUserIndex = 0;
 
   updatePadCountForLevel();
   rebuildMemoryGrid();
-
   addRandomStep();
-  setMemoryUI("Отлично! Следующий уровень…");
-  await sleep(520);
+
+  await sleep(480);
   await showSequence();
 }
 
@@ -776,7 +665,6 @@ function memoryReset() {
   memPadCount = 4;
   memoryGridEl.style.setProperty("--cols", "2");
   rebuildMemoryGrid();
-
   setMemoryUI("Нажми Start");
 }
 
@@ -802,7 +690,9 @@ memoryGridEl.addEventListener("click", (e) => {
   handleMemClick(Number(btn.dataset.pad));
 });
 
-// ===== Quiz =====
+/* =========================
+   Quiz (anti-repeat)
+========================= */
 const QUESTIONS = [
   // EASY
   { id:"e1", level:"easy", q:"Сколько минут в 2 часах 30 мин?", opts:["120","150","180","210"], a:1 },
@@ -835,7 +725,7 @@ let quizLocked = false;
 
 function getQuizLevel() {
   const v = localStorage.getItem(K_QUIZ_LEVEL);
-  return (v === "easy" || v === "hard" || v === "medium") ? v : "medium";
+  return (v === "easy" || v === "medium" || v === "hard") ? v : "medium";
 }
 function setQuizLevel(level) {
   localStorage.setItem(K_QUIZ_LEVEL, level);
@@ -844,11 +734,10 @@ function setQuizLevel(level) {
 }
 function updateQuizLevelUI() {
   const level = getQuizLevel();
-  quizEasyBtn?.classList.toggle("active", level === "easy");
-  quizMedBtn?.classList.toggle("active", level === "medium");
-  quizHardBtn?.classList.toggle("active", level === "hard");
+  quizEasyBtn.classList.toggle("active", level === "easy");
+  quizMedBtn.classList.toggle("active", level === "medium");
+  quizHardBtn.classList.toggle("active", level === "hard");
 }
-
 function updateQuizScore() {
   quizScore.textContent = `${quizCorrect} / ${quizTotal}`;
 }
@@ -877,19 +766,18 @@ function renderQuizQuestion() {
 
 function nextQuiz() {
   const level = getQuizLevel();
-  const histKey = quizHistKey(level);
-  const hist = loadJSON(histKey, []);
+  const hist = loadJSON(quizHistKey(level), []);
   const recent = new Set(hist);
 
   let pool = QUESTIONS.filter(q => q.level === level && !recent.has(q.id));
-  if (pool.length === 0) pool = QUESTIONS.filter(q => q.level === level);
-  if (pool.length === 0) pool = QUESTIONS.slice();
+  if (!pool.length) pool = QUESTIONS.filter(q => q.level === level);
+  if (!pool.length) pool = QUESTIONS.slice();
 
   quizCurrent = pool[Math.floor(Math.random() * pool.length)];
   renderQuizQuestion();
 
   hist.unshift(quizCurrent.id);
-  saveJSON(histKey, hist.slice(0, 8));
+  saveJSON(quizHistKey(level), hist.slice(0, 8));
 }
 
 function chooseQuiz(idx, btnEl) {
@@ -897,15 +785,15 @@ function chooseQuiz(idx, btnEl) {
   quizLocked = true;
 
   quizTotal += 1;
+  const correctIdx = quizCurrent.a;
 
   const buttons = Array.from(quizOptions.querySelectorAll(".quizOptBtn"));
-  const correctIdx = quizCurrent.a;
 
   if (idx === correctIdx) {
     quizCorrect += 1;
     btnEl.classList.add("correct");
     quizFeedback.textContent = "Верно ✅";
-    showCelebrateAsync();
+    showCelebrate();
   } else {
     btnEl.classList.add("wrong");
     buttons[correctIdx]?.classList.add("correct");
@@ -927,22 +815,27 @@ function resetQuiz() {
   localStorage.removeItem(quizHistKey(level));
 }
 
-// ===== Events =====
+/* =========================
+   Events
+========================= */
 // tabs
 tabSchedule.addEventListener("click", () => showTab("schedule"));
 tabWishes.addEventListener("click", () => showTab("wishes"));
 tabSettings.addEventListener("click", () => showTab("settings"));
 
-// week switch
+// week
 weekOddBtn.addEventListener("click", () => setWeek("odd"));
 weekEvenBtn.addEventListener("click", () => setWeek("even"));
 
-// settings actions
+// wishes
+newWishBtn.addEventListener("click", setNewWish);
+
+// schedule settings
 addClassBtn.addEventListener("click", openAddClass);
 classForm.addEventListener("submit", (e) => { e.preventDefault(); saveClassFromForm(); });
 
-clearAllBtn.addEventListener("click", () => {
-  if (!confirm("Точно очистить всё расписание?")) return;
+clearScheduleBtn.addEventListener("click", () => {
+  if (!confirm("Точно очистить расписание?")) return;
   localStorage.removeItem(K_CLASSES);
   renderAll();
 });
@@ -965,9 +858,6 @@ csvInput.addEventListener("change", async (e) => {
   }
 });
 
-// wishes
-newWishBtn.addEventListener("click", setNewWish);
-
 // memory
 memoryStartBtn.addEventListener("click", () => { if (!memActive) memoryStart(); });
 memoryResetBtn.addEventListener("click", memoryReset);
@@ -975,31 +865,6 @@ memoryResetBtn.addEventListener("click", memoryReset);
 // quiz
 quizNextBtn.addEventListener("click", nextQuiz);
 quizResetBtn.addEventListener("click", resetQuiz);
-quizEasyBtn?.addEventListener("click", () => setQuizLevel("easy"));
-quizMedBtn?.addEventListener("click", () => setQuizLevel("medium"));
-quizHardBtn?.addEventListener("click", () => setQuizLevel("hard"));
-
-// ===== Init =====
-function init() {
-  seedDefaultScheduleIfEmpty();
-
-  // авто-неделя: если режим auto — ставим неделю сами
-  if (getWeekMode() === "auto") {
-    localStorage.setItem(K_WEEK, weekFromAnchor(new Date()));
-  }
-
-  updateWeekUI();
-  renderAll();
-  showTab("schedule");
-
-  setNewWish();
-  memoryReset();
-
-  updateQuizLevelUI();
-  resetQuiz();
-
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  }
-}
-init();
+quizEasyBtn.addEventListener("click", () => setQuizLevel("easy"));
+quizMedBtn.addEventListener("click", () => setQuizLevel("medium"));
+quizHardBtn.addEventListener
